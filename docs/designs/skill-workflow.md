@@ -1,7 +1,7 @@
 # Code Design Planner：设计先行的功能开发闭环
 
 - 日期：2026-09-30（Australia/Sydney）
-- 状态：reviewing（本地 G3 通过；远端交付待验证）
+- 状态：done
 - 评审范围：本空仓库的初始交付；不存在已有业务代码或基线提交
 
 ## User Requirement / Requirement Analysis
@@ -88,9 +88,10 @@ Reviewer 对照 AC，检查 staged、unstaged、untracked 和分支已提交内�
 | skill-creator 的 `quick_validate.py .` | Skill is valid | 官方脚本的 PyYAML 仅安装在临时目录；不加入本项目依赖 |
 | 独立 Planner 演练 | 符合范围 | 只新增设计，保留原业务文件；遇到未知元素模型时标 blocked，未猜测核心契约 |
 | 独立 Reviewer 演练 | 找到 P1 blocking | 读取 staged 与 untracked 文件；1 个 happy-path 测试通过，但实际探针复现非所有者取消，未误判 Done |
+| 缺失设计的 Reviewer 演练 | 正确报告范围限制 | 依据原需求识别越权问题，不声称设计一致性通过，不补写文档；既有文件哈希不变 |
+| GitHub Actions | passed | [初始实现提交的 CI](https://github.com/Pango-proto/code-design-planner/actions/runs/36691821783)：Python 3.10 / 3.13 均完成相同校验与 40 项测试 |
 
-行为演练在仓库外临时项目执行；其业务文件不作为本项目交付。CI 配置使用 Python 3.10 / 3.13，
-远端运行结果待发布后核验。本机运行版本为 Python 3.12。
+行为演练在仓库外临时项目执行；其业务文件不作为本项目交付。本机运行版本为 Python 3.12。
 
 ## Actual scope / Change budget
 
@@ -109,13 +110,14 @@ Reviewer 对照 AC，检查 staged、unstaged、untracked 和分支已提交内�
 
 Design drift：全局/项目分层按追加需求调整；其余在设计范围内。无未解释的业务变更。
 Simplification：不引入 MCP 服务、CLI agent runner、技术栈脚手架或额外项目技能副本。
-Verdict：本地开发 `pass`；当前初始文件集已审阅、40 项回归检查通过，R-01—R-03 关闭。
-AC-06 的远端交付仍待实际推送及核验，不能用本地通过代替远端 CI。
+Verdict：`pass`；初始文件集已审阅、40 项回归检查通过，R-01—R-03 关闭。
+AC-06 已通过 GitHub main 提交匹配与成功的远端 CI 核验。
 
 ## Gate record / Delivery
 
 - G1：用户原始闭环要求与追加的全局/项目分层均已纳入。
 - G2：在代码前建立本设计；本任务已授权实现与写入指定仓库，不需要逐阶段重复批准。
 - G3：本地必要验证和修复已完成；没有开放的阻塞代码问题。
-- 发布：GitHub 插件曾返回 403，未产生远端文件；用户随后完成 gh 登录，已核验 Pango-proto 对仓库有 ADMIN 权限。推送待执行。
+- 发布：GitHub 插件曾返回 403，未产生远端文件；用户随后完成 gh 登录，已核验 Pango-proto 对仓库有 ADMIN 权限。
+  初始实现提交 `b1d162ecf0e2edc575a063fa343618576525fede` 已推送 main，远端 SHA 匹配且 CI 成功。
 - 未执行：本机全局技能安装、全局规则改写、分支保护配置和自动部署均不属于本次仓库交付。

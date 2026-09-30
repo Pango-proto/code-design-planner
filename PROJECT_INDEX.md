@@ -5,7 +5,7 @@
 ## 当前阶段
 - 阶段：P01-skill-delivery
 - 目标：交付全局一份、项目知识本地化的 Planner / Reviewer 开发协议。
-- 进度：本地实现与独立评审完成；40 项测试和结构/治理检查通过，待 GitHub 推送与远端验证。
+- 进度：已发布 main；40 项测试、结构/治理检查、独立评审与 Python 3.10 / 3.13 的远端 CI 均通过。
 
 ## 模块登记
 | 模块 | 状态 | 说明 | 文档 |
@@ -39,3 +39,5 @@
 - 冷区登记：_cold/COLD_LOG.md
 - 主设计：docs/designs/skill-workflow.md
 - 目录决策：docs/decisions/D001-skill-layout.md
+- 交付审计：docs/audits/2026-09-30_skill-delivery.md
+- 阶段总结：docs/phases/P01-skill-delivery.md
