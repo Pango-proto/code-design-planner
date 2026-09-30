@@ -23,13 +23,15 @@ class InstallTests(unittest.TestCase):
         self.temporary = tempfile.TemporaryDirectory(prefix="planner-install-")
         self.addCleanup(self.temporary.cleanup)
         self.root = Path(self.temporary.name).resolve()
-        self.release = self.root / "release"
-        (self.release / "scripts").mkdir(parents=True)
-        shutil.copy2(ROOT / "scripts/install.py", self.release / "scripts/install.py")
+        self.repository = self.root / "release"
+        self.release = self.repository / "skills" / installer.SKILL_NAME
+        (self.repository / "scripts").mkdir(parents=True)
+        shutil.copy2(ROOT / "scripts/install.py", self.repository / "scripts/install.py")
         for relative in installer.RELEASE_FILES:
             path = self.release / relative
             path.parent.mkdir(parents=True, exist_ok=True)
             path.write_text(f"Release content: {relative}\n", encoding="utf-8")
+        (self.repository / "private-notes.txt").write_text("Do not distribute.\n")
         (self.release / "private-notes.txt").write_text("Do not distribute.\n")
         self.home = self.root / "home"
         self.codex_home = self.home / ".codex"
@@ -38,7 +40,7 @@ class InstallTests(unittest.TestCase):
 
     def run_cli(self, *args: str, success: bool = True) -> subprocess.CompletedProcess[str]:
         result = subprocess.run(
-            [sys.executable, str(self.release / "scripts/install.py"), *map(str, args)],
+            [sys.executable, str(self.repository / "scripts/install.py"), *map(str, args)],
             cwd=self.root, env=self.env, capture_output=True, text=True,
         )
         if success:
@@ -58,7 +60,7 @@ class InstallTests(unittest.TestCase):
             project = self.root / name
             self.run_cli("project", "--path", project)
             self.assertEqual([path.name for path in project.iterdir()], ["AGENTS.md"])
-        self.assertEqual(len(list(self.root.rglob("code-design-planner/SKILL.md"))), 1)
+        self.assertEqual(len(list(self.home.rglob("code-design-planner/SKILL.md"))), 1)
 
     def test_repeat_is_idempotent_and_leaves_existing_file_mtime(self) -> None:
         self.run_cli("install", "--with-global-rules")

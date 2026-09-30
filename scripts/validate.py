@@ -268,7 +268,7 @@ def validate(root: Path) -> list[str]:
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--root", type=Path, default=Path(__file__).resolve().parents[1], help="Skill package root (default: repository root)")
+    parser.add_argument("--root", type=Path, default=Path(__file__).resolve().parents[1] / "skills" / "code-design-planner", help="Skill package root (default: repository skills/code-design-planner)")
     args = parser.parse_args(argv)
     errors = validate(args.root)
     for error in errors:

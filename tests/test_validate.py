@@ -6,7 +6,6 @@ import io
 from pathlib import Path
 import tempfile
 import unittest
-from unittest.mock import patch
 
 
 SPEC = importlib.util.spec_from_file_location("skill_validate", Path(__file__).resolve().parents[1] / "scripts" / "validate.py")
@@ -105,12 +104,18 @@ class ValidationTests(unittest.TestCase):
         self.assertEqual(set(validator.REQUIRED_FILES), set(installer.RELEASE_FILES))
 
     def test_real_source_and_installed_release_both_validate(self):
-        source = Path(__file__).resolve().parents[1]
+        source = Path(__file__).resolve().parents[1] / "skills" / "code-design-planner"
         self.assertEqual(validator.validate(source), [])
         skills = Path(self.temporary.name) / "installed-skills"
-        with patch.object(installer, "SOURCE_ROOT", source), contextlib.redirect_stdout(io.StringIO()):
-            self.assertEqual(installer.main(["install", "--skills-dir", str(skills)]), 0)
+        codex_home = Path(self.temporary.name) / "codex-home"
+        project = Path(self.temporary.name) / "project"
+        with contextlib.redirect_stdout(io.StringIO()):
+            self.assertEqual(validator.main([]), 0)
+            self.assertEqual(installer.main(["install", "--skills-dir", str(skills), "--with-global-rules", "--codex-home", str(codex_home)]), 0)
+            self.assertEqual(installer.main(["project", "--path", str(project)]), 0)
         self.assertEqual(validator.validate(skills / installer.SKILL_NAME), [])
+        self.assertIn((source / "assets/global-agents.md").read_text(encoding="utf-8").strip(), (codex_home / "AGENTS.md").read_text(encoding="utf-8"))
+        self.assertEqual((project / "AGENTS.md").read_bytes(), (source / "assets/project-agents.md").read_bytes())
 
     def test_missing_relative_link_is_detected(self):
         self.write("references/planner.md", "[Missing](missing.md)\n[other]: ../assets/missing.md\n")

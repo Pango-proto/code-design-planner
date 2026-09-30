@@ -1,123 +1,103 @@
-# Code Design Planner：设计先行的功能开发闭环
+# Code Design Planner：设计与变更记录
 
 - 日期：2026-09-30（Australia/Sydney）
-- 状态：done
-- 评审范围：本空仓库的初始交付；不存在已有业务代码或基线提交
+- 当前阶段：目录精简完成；本地验证与独立复审通过
+- 本轮基线：`92b207f`
 
-## User Requirement / Requirement Analysis
+## 产品要求
 
-用户希望将全栈功能开发固定为：User Requirement → Requirement Analysis →
-code-design-planner → docs/designs/xxx.md → Implementation → Tests → git diff →
-code-design-planner --review → Fix → Done，并发布到 Pango-proto/code-design-planner。
+全局只维护一份技能和通用流程，项目只维护自己的 AGENTS.md 与按需设计文档。
+一个 SKILL.md 入口支持 Planner / Reviewer，功能开发沿着下列闭环推进：
 
-| ID | 可观察的验收条件 | 验证方式 |
+```text
+需求 → 分析 → 设计 → docs/designs/<feature>.md
+→ 实现 → 测试 → 完整 diff → Review → Fix → 复验 / 复审 → Done
+```
+
+无行为变化的微小修改可精简记录；一般功能先写短设计；高风险任务增加调研和独立审查。
+只设计或只审查请求遵守范围，默认不反复要求阶段批准。必要验证缺失不能声明完成。
+本技能不绑定技术栈，不引入运行中的 UI、API 或数据库；这些业务层对本仓库为 N/A。
+
+## 目录精简需求
+
+用户反馈初版目录分散、文件过多，GitHub 显示的长提交说明重复。
+初版有 24 个受 Git 管理的文件，其中技能发行只需要 8 个。通用多模块治理脚本、配置、
+空冷区登记及多份完成报告为这个单技能仓库增加了维护负担。
+
+GitHub 目录行中的说明来自最近修改该路径的提交。同一提交涉及多个目录时会重复；
+它不是可分别填写的目录描述。不重写历史或创建仅为改变显示的提交，使用简短的真实提交标题，
+目录用途由 README 说明。
+
+## 当前设计
+
+- `skills/code-design-planner/`：唯一发行源码。8 个文件整体迁移，内部内容与相对链接保持不变。
+- `scripts/`：安装器和结构校验器；源码包默认位置随迁移调整。
+- `tests/`：保留安装保护、幂等、规则合并、发行清单与真实安装后的验证测试。
+- `docs/designs/skill-workflow.md`：设计、取舍、验证和阶段记录的唯一位置。
+- `README.md`：使用入口与目录导航；`AGENTS.md`：本项目维护约定；`.github/`：CI。
+
+用户级安装目录、技能名称、模式调用和现有安装命令保持不变。显式 `validate.py --root`
+仍接收技能包目录；从 GitHub 子目录安装时，新源码路径为 `skills/code-design-planner`。
+安装器始终只分发登记的 8 个文件；项目初始化只创建知识模板，不复制技能。
+
+全局规则只有显式选择后才写入；存在非空 AGENTS.override.md 时先阻止安装并提示人工合并。
+已有不同技能默认拒绝覆盖，`--update` 仅替换登记文件；未知文件和非受管理规则保留。
+全部确定性冲突先预检，再逐文件原子写入，不宣称跨目录事务回滚。
+
+## Change budget
+
+| 操作 | 范围 | 理由 |
 |---|---|---|
-| AC-01 | 一个 SKILL.md 入口，明确 Planner 与 Reviewer 的选择和转换 | 独立技能行为演练 |
-| AC-02 | 实现前形成需求、验收、全栈边界、测试计划和取舍；一个功能一份活设计 | 设计模板与 Planner 演练 |
-| AC-03 | Review 基于设计、当前代码、完整变更范围和测试证据，Fix 后重新验证 | Reviewer 演练，包括未跟踪文件与缺失设计 |
-| AC-04 | 跨项目可安装，保留既有技能与 AGENTS.md，重复运行不重复插入规则 | 临时项目安装测试 |
-| AC-05 | 说明当前技能/插件协作及能力边界，不要求额外插件或虚构命令 | 官方文档核对与人工审阅 |
-| AC-06 | 源码、设计、验证、使用文档落入指定 GitHub 仓库 | 远端提交内容核对 |
+| 移动 | SKILL.md、agents、assets、references，共 8 文件 | 将完整技能包集中到明确目录 |
+| 修改 | installer、validator、2 个测试、CI | 更新默认源码位置和真实安装测试；取消已移除治理工具的调用 |
+| 修改 | README、AGENTS、.gitignore、本设计 | 更新导航、轻量维护约定和唯一记录 |
+| 删除 | PROJECT_INDEX、governance.py、governance.json、COLD_LOG、原 audit/phase/decision，共 7 文件 | 合并重复职责；由 Git 保留历史 |
+| 删除空目录 | src、outputs、scratch、config、冷区及空文档分类目录 | 仅 rmdir 已确认空目录，不清理未知内容 |
 
-## Scope / Non-goals
+删除前基线干净、旧治理检查通过。初版“技能包就是仓库根目录”的选择被本次需求取代，
+并在此记录原因。用户明确要求轻量化，后续不能因为缺少旧索引和治理脚本而重新生成整套骨架。
+文件位置由 README / AGENTS 约定，包校验、行为测试和 Git diff 继续承担适用的自动检查。
 
-交付中文为主的可移植 Codex skill、全局流程与项目知识模板、安全的安装脚本、验证脚本与 CI。
-根据用户追加规划，推荐全局一份技能、全局通用流程规则，项目只维护项目知识和按需设计记录。
-不做业务全栈脚手架，不绑定前后端技术栈；本次构建安装工具，不直接改写本机全局配置，
-不自动部署、合并或申请付费服务。
-`--review` 是传给技能的自然语言模式约定，不是 Codex 或 shell 的新 CLI。
-Skill 与 AGENTS.md 是代理执行约定；不能保证所有工具都服从，也不能代替分支保护或语义审查。
+## 本轮验收与验证
 
-## Design
-
-根 SKILL.md 保留共同约束和两种模式；详细规则分别进入 references/planner.md 与
-references/reviewer.md。references/integrations.md 记录可选的现有 skill/plugin 协作。
-assets/design-template.md 是唯一功能设计模板，评审与修复记录原地追加。
-assets/global-agents.md 是安装器插入全局 AGENTS.md 的受管理区块。
-assets/project-agents.md 只承载技术栈、目录、领域边界、测试命令等项目知识。
-
-安装器用 Python 标准库，复制 SKILL.md、agents、references、assets 至用户级
-`~/.agents/skills/code-design-planner/`，可显式指定兼容现有环境的技能目录。
-全局规则注入须显式选项，默认位置 `$CODEX_HOME/AGENTS.md` 或 `~/.codex/AGENTS.md`。
-不能覆盖既有规则；已有技能内容不一致时拒绝覆盖，除非用户显式选择更新。
-预检所有冲突和路径，拒绝有风险的符号链接；禁止在半安装后才发现 AGENTS.md 冲突。
-只复制发行清单中的 8 个资源文件，不携带仓库治理、Git 元数据或测试缓存。project 子命令仅建立项目
-知识模板；已有 AGENTS.md 内容不同时保留并提示人工合并，不复制技能或整套流程。
-
-五阶段为 Requirement、Design、Implementation、Verification、Review；G1 是需求可行动，
-G2 是设计就绪且在已有授权内，G3 是验证和必要修复完成。只有用户要求先设计再确认、
-项目明确要求人工批准，或超出授权范围时，G2 才等待人工。Done 不等同自动合并。
-Trivial 仅无行为变化的轻微修改可走精简路径；行为性配置不能按行数认定 trivial。
-一般功能遵循完整闭环；大型/高风险功能增加调研与独立设计评审。所有路径均检查 diff。
-
-Planner 在有足够信息时继续已授权的实现；只做设计或只做评审的请求保留其边界。
-Reviewer 对照 AC，检查 staged、unstaged、untracked 和分支已提交内容；无法确认基线时
-报告范围限制。缺失设计不能伪装成事前设计；补建时标注追溯来源。无法运行测试不得标记 Done。
-非阻塞观察可以记录；未关闭的必要修复与验收阻塞必须保持 needs-fix / blocked 状态。
-
-## Full-stack applicability
-
-前端：状态、可访问性与交互验收；API：契约、校验、错误与授权；数据：迁移、兼容性、
-一致性；运行：配置、观测、回滚。按实际功能选择相关层，N/A 要给简短理由。
-本技能项目没有 UI、运行中的 API 或数据库；相应层为 N/A。
-
-## Alternatives / Risks
-
-只写长提示词无法跨项目持续发现；因此提供用户级安装和全局 AGENTS 规则。
-自动写入所有仓库会扩大授权范围；因此只对显式选定的安装目标生效。
-复制整套现有插件会增加依赖；因此只提供按需路由及无插件时的降级方式。
-自动语义判定 Done 不可靠；CI 验证包结构与安装行为，最终完成仍依赖证据与评审。
-
-## Implementation / Tests
-
-1. 编写技能入口、模式指导、模板与元数据。
-2. 完成无依赖安装与包校验工具；在临时项目测试保护和幂等性。
-3. README 说明安装、触发、全流程、可选协作、限制；CI 跑同一组检查。
-4. 独立 agent 对真实场景做 forward-test；依据发现修复、重跑受影响检查。
-5. 检查完整 git diff，记录审阅范围与证据，发布并核对远端。
-
-## Validation evidence
-
-2026-09-30 本地实际执行：
-
-| 检查 | 结果 | 覆盖 / 限制 |
+| ID | 验收条件 | 证据 |
 |---|---|---|
-| `python3 scripts/validate.py` | passed | 8 个发行文件、受限 YAML、包内链接与发行清单 |
-| `python3 -m unittest discover -s tests -v` | 40 tests passed | 19 个安装测试 + 21 个校验测试，含真实源码安装后的包校验 |
-| `python3 scripts/governance.py check` | passed，0 warnings | 当前仓库文件治理 |
-| skill-creator 的 `quick_validate.py .` | Skill is valid | 官方脚本的 PyYAML 仅安装在临时目录；不加入本项目依赖 |
-| 独立 Planner 演练 | 符合范围 | 只新增设计，保留原业务文件；遇到未知元素模型时标 blocked，未猜测核心契约 |
-| 独立 Reviewer 演练 | 找到 P1 blocking | 读取 staged 与 untracked 文件；1 个 happy-path 测试通过，但实际探针复现非所有者取消，未误判 Done |
-| 缺失设计的 Reviewer 演练 | 正确报告范围限制 | 依据原需求识别越权问题，不声称设计一致性通过，不补写文档；既有文件哈希不变 |
-| GitHub Actions | passed | [初始实现提交的 CI](https://github.com/Pango-proto/code-design-planner/actions/runs/36691821783)：Python 3.10 / 3.13 均完成相同校验与 40 项测试 |
+| L-01 | 明确分离技能、工具、测试与设计 | 受管理文件 24 → 17；根目录可见条目 12 → 6 |
+| L-02 | 安装后仍是同名 8 文件技能，原命令及保护不变 | 真实源码默认路径安装、全局规则、项目模板与安装包验证 |
+| L-03 | 不牺牲现有行为测试 | `python3 -m unittest discover -s tests -v`：40 项通过 |
+| L-04 | 无失效的现行引用或 CI 命令 | 包校验通过；相对链接、删除项引用及完整 diff 检查 |
+| L-05 | 保留历史，以真实新提交发布 | 普通提交和 push；发布后核验最新 GitHub Actions |
 
-行为演练在仓库外临时项目执行；其业务文件不作为本项目交付。本机运行版本为 Python 3.12。
+本轮没有新增依赖、脚本或测试文件。真实发行测试扩展检查 validator 无参数入口、安装器默认
+源码位置、实际全局规则与项目知识模板，保留原有 40 项测试。
 
-## Actual scope / Change budget
+Review / Fix：独立审阅结论 `pass`，无阻塞项。发现一处非阻塞文档表述：README 将本地 diff
+检查也算入 CI；现已明确 CI 只运行包校验和工具测试。
 
-本次是初始技能项目，按技能、资源、工具、测试、文档五组交付，未添加业务应用或额外服务。
-用户补充分层要求后，将原项目级默认安装改为用户级默认安装；这是已记录的需求变更。
-发行包只有 8 个文件；仓库额外保留安装/校验/治理工具、测试、CI、README 和项目设计。
-两项评审修复只修改对应工具与回归测试，未扩大产品范围。
+独立迁移探针：8 个资源与基线逐字节一致；先用旧版安装，再用新版运行，结果为
+`0 writes / 9 unchanged`。用户规则、未知文件和文件 mtime 均保留；从无关工作目录校验已安装
+技能通过；非空 override 仍在写入前阻止安装。README / AGENTS 链接、删除项引用与完整 diff
+已检查。最新远端 CI 以该提交的 GitHub Actions 记录为准，不以旧版 CI 结果替代。
 
-## Review / Fix
+## 初始交付的历史证据
 
-| ID | 严重性 / 是否阻塞交付 | 发现与修复 | 状态 |
-|---|---|---|---|
-| R-01 | P2 / blocking | 全局 override 静默屏蔽规则；安装前预检非空 override，保留文件并提示人工合并，覆盖拒绝与空文件场景 | fixed / 独立复审关闭 |
-| R-02 | P2 / blocking | 源码存在的链接目标不一定进入发行包；校验发行目标、两份清单一致性及真实安装后的资源闭环 | fixed / 独立复审关闭 |
-| R-03 | P2 / blocking | review-only 是否可写回设计存在歧义；入口和指导统一为默认只读，完整开发或已授权才回写 | fixed / 独立复审关闭 |
+初始实现 `b1d162e`、交付记录 `92b207f` 均已发布。
+[初始 CI](https://github.com/Pango-proto/code-design-planner/actions/runs/36691821783) 与
+[交付记录 CI](https://github.com/Pango-proto/code-design-planner/actions/runs/36692053559) 通过，
+Python 3.10 / 3.13 运行 40 项测试；本地 Python 3.12 也通过。
+官方 skill-creator 格式校验通过，PyYAML 仅用于临时运行官方脚本，不是本项目依赖。
 
-Design drift：全局/项目分层按追加需求调整；其余在设计范围内。无未解释的业务变更。
-Simplification：不引入 MCP 服务、CLI agent runner、技术栈脚手架或额外项目技能副本。
-Verdict：`pass`；初始文件集已审阅、40 项回归检查通过，R-01—R-03 关闭。
-AC-06 已通过 GitHub main 提交匹配与成功的远端 CI 核验。
+当时独立评审关闭的三项发现：
 
-## Gate record / Delivery
+- R-01：非空全局 override 会屏蔽新规则；新增写入前保护与回归测试。
+- R-02：源码链接存在但未发行；新增发行清单校验、清单一致性和真实安装后的验证。
+- R-03：仅审阅是否可写回设计不清；统一为默认只读，完整开发或明确授权才更新记录。
 
-- G1：用户原始闭环要求与追加的全局/项目分层均已纳入。
-- G2：在代码前建立本设计；本任务已授权实现与写入指定仓库，不需要逐阶段重复批准。
-- G3：本地必要验证和修复已完成；没有开放的阻塞代码问题。
-- 发布：GitHub 插件曾返回 403，未产生远端文件；用户随后完成 gh 登录，已核验 Pango-proto 对仓库有 ADMIN 权限。
-  初始实现提交 `b1d162ecf0e2edc575a063fa343618576525fede` 已推送 main，远端 SHA 匹配且 CI 成功。
-- 未执行：本机全局技能安装、全局规则改写、分支保护配置和自动部署均不属于本次仓库交付。
+独立行为演练确认：Planner 在核心数据契约缺失时写设计并报告阻塞，不改业务文件；
+Reviewer 覆盖 staged 和 untracked 文件，在 happy-path 测试通过时仍复现越权取消；
+没有设计时依据原需求审查并报告范围限制，不伪称设计一致性通过、不擅自补写文件。
+
+## 能力与授权边界
+
+Skill / AGENTS 是代理指令；本仓库 CI 验证包结构及工具行为，不能证明消费项目的设计语义或审阅已完成。
+本次未安装全局技能、改写用户全局规则、启用分支保护或部署服务。

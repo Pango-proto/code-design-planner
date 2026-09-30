@@ -1,5 +1,0 @@
-{
-  "root_files_extra": ["SKILL.md"],
-  "root_dirs_extra": ["agents", "assets", "references"],
-  "doc_dirs_extra": ["designs"]
-}

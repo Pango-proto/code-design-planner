@@ -24,7 +24,7 @@ RELEASE_FILES = (
 )
 BEGIN = "<!-- BEGIN code-design-planner -->"
 END = "<!-- END code-design-planner -->"
-SOURCE_ROOT = Path(__file__).resolve().parent.parent
+SOURCE_ROOT = Path(__file__).resolve().parents[1] / "skills" / SKILL_NAME
 
 
 class InstallError(Exception):
@@ -123,7 +123,7 @@ def plan_install(args: argparse.Namespace) -> tuple[dict[Path, bytes], int]:
         if override_path.exists() and override_path.read_bytes().strip():
             raise InstallError(
                 f"Nonempty {override_path} takes precedence over AGENTS.md; "
-                "preserve the override and manually merge assets/global-agents.md "
+                f"preserve the override and manually merge {SOURCE_ROOT / 'assets/global-agents.md'} "
                 "into the effective instructions. No files were written"
             )
         rules_path = codex_home / "AGENTS.md"
@@ -141,7 +141,7 @@ def plan_project(args: argparse.Namespace) -> tuple[dict[Path, bytes], int]:
     if destination.exists() and destination.read_bytes() != content:
         raise InstallError(
             f"Project AGENTS.md already exists: {destination}; "
-            "merge assets/project-agents.md manually, preserving project knowledge"
+            f"merge {SOURCE_ROOT / 'assets/project-agents.md'} manually, preserving project knowledge"
         )
     writes: dict[Path, bytes] = {}
     changed = plan_file(destination, content, writes, update=False)

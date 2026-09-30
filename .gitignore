@@ -1,9 +1,5 @@
-# 文件治理
-outputs/
-scratch/
-_cold/*
-!_cold/COLD_LOG.md
 .env
 __pycache__/
 *.py[cod]
 .DS_Store
+.venv/

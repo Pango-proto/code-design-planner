@@ -23,5 +23,3 @@ jobs:
         run: python scripts/validate.py
       - name: Test standard-library tooling
         run: python -m unittest discover -s tests -v
-      - name: Check file governance
-        run: python scripts/governance.py check
